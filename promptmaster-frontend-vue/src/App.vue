@@ -1,17 +1,22 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <h1>{{ title }}</h1>
+    <HelloWorld :msg="title" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import { defineComponent, ref } from "vue";
+import HelloWorld from "./components/HelloWorld.vue";
 
 export default defineComponent({
-  components: {
-    HelloWorld,
+  components: { HelloWorld },
+  setup() {
+    // ✅ TypeScript の型を適用
+    const title = ref<string>("Welcome to Your Vue.js + TypeScript App");
+
+    return { title };
   },
 });
 </script>
