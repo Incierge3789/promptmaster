@@ -8,12 +8,13 @@
     </p>
 
     <h3>Users List</h3>
-    <ul v-if="users.length">
+    <p v-if="isLoading">Loading users...</p>
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <ul v-if="!isLoading && !errorMessage">
       <li v-for="user in users" :key="user.id">
         {{ user.name }} ({{ user.email }})
       </li>
     </ul>
-    <p v-else>Loading users...</p>
 
     <h3>Installed CLI Plugins</h3>
     <ul>
@@ -60,18 +61,25 @@ export default defineComponent({
   },
   setup() {
     const users = ref<{ id: number; name: string; email: string }[]>([]);
+    const isLoading = ref<boolean>(true);
+    const errorMessage = ref<string | null>(null);
 
     // コンポーネントがマウントされたらAPIを実行
     onMounted(async () => {
       try {
         users.value = await fetchUsers();
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        errorMessage.value = "Failed to fetch users. Please try again later.";
+        console.error("API Error:", error);
+      } finally {
+        isLoading.value = false;
       }
     });
 
     return {
       users,
+      isLoading,
+      errorMessage,
     };
   },
 });
@@ -91,5 +99,9 @@ li {
 }
 a {
   color: #42b983;
+}
+.error {
+  color: red;
+  font-weight: bold;
 }
 </style>
