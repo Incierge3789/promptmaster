@@ -19,11 +19,12 @@ const UserSchema = z.object({
   email: z.string().email(),
 });
 
+// `User` をエクスポートする
+export type User = z.infer<typeof UserSchema>;
+
 // ✅ 配列のスキーマ
 const UsersArraySchema = z.array(UserSchema);
 
-// ✅ 型定義
-type User = z.infer<typeof UserSchema>;
 
 // ✅ ユーザー一覧を取得
 export const fetchUsers = async (): Promise<User[]> => {
@@ -46,3 +47,4 @@ export const fetchUserById = async (userId: number): Promise<User | null> => {
     return null; // エラー時は `null` を返す
   }
 };
+
