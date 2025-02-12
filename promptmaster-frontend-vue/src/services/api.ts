@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { z } from 'zod';
 
-// APIのベースURLを定義（環境に応じて変更）
-const API_BASE_URL = "http://localhost:5000";
+// API のベースURL
+const API_BASE_URL = "http://localhost:5001";
 
-// axios のインスタンスを作成
+// Axios インスタンス
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -11,21 +12,34 @@ const api = axios.create({
   },
 });
 
-// ユーザー情報の型定義
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+// ✅ ユーザーデータのスキーマを定義（型バリデーション）
+const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  email: z.string().email(),
+});
 
-// ユーザー一覧を取得するAPI関数
+// ✅ 型定義
+type User = z.infer<typeof UserSchema>;
+
+// ✅ API レスポンスのバリデーション & 型チェック
 export const fetchUsers = async (): Promise<User[]> => {
-  const response = await api.get<User[]>("/users");
-  return response.data;
+  try {
+    const response = await api.get("/users");
+    return z.array(UserSchema).parse(response.data);
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    return [];
+  }
 };
 
-// 特定のユーザー情報を取得
-export const fetchUserById = async (userId: number): Promise<User> => {
-  const response = await api.get<User>(`/users/${userId}`);
-  return response.data;
+// ✅ 特定のユーザー情報を取得
+export const fetchUserById = async (userId: number): Promise<User | null> => {
+  try {
+    const response = await api.get(`/users/${userId}`);
+    return UserSchema.parse(response.data);
+  } catch (error) {
+    console.error(`Failed to fetch user ${userId}:`, error);
+    return null;
+  }
 };

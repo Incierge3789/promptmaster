@@ -9,15 +9,29 @@ const fs = require('fs');
 const FormData = require('form-data');
 
 dotenv.config();  // .envファイルの読み込み
-console.log("API Key: ", process.env.OPENAI_API_KEY);  // この行を追加してAPIキーをログ出力
+console.log("API Key: ", process.env.OPENAI_API_KEY);  // APIキーのログ出力（デバッグ用）
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5001; // ✅ ポート番号を 5000 に変更（フロントエンドと分離）
 
-app.use(cors());
+// ✅ CORS 設定を追加（Vueフロントエンドを許可）
+app.use(cors({
+  origin: "http://localhost:3001", // フロントエンドのURL
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: "Content-Type,Authorization"
+}));
+
 app.use(bodyParser.json());
 
 const upload = multer({ dest: 'uploads/' });  // 音声ファイルのアップロード先を指定
+
+// ✅ ユーザー一覧APIの追加（フロントエンドのデバッグ用）
+app.get('/users', (req, res) => {
+  res.json([
+    { id: 1, name: "John Doe", email: "john@example.com" },
+    { id: 2, name: "Jane Doe", email: "jane@example.com" }
+  ]);
+});
 
 app.post('/api/prompt', upload.single('file'), async (req, res) => {
   const { prompt, model } = req.body;
@@ -103,5 +117,5 @@ app.post('/api/prompt', upload.single('file'), async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Backend running at http://localhost:${port}`);
+  console.log(`✅ Backend running at http://localhost:${port}`);
 });

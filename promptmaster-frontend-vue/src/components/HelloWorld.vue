@@ -49,22 +49,30 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, PropType } from "vue";
 import { fetchUsers } from "../services/api";
+
+// ✅ ユーザーの型を定義
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 export default defineComponent({
   props: {
     msg: {
-      type: String,
+      type: String as PropType<string>,
       required: true,
     },
   },
   setup() {
-    const users = ref<{ id: number; name: string; email: string }[]>([]);
+    // ✅ 型安全な `ref` を定義
+    const users = ref<User[]>([]);
     const isLoading = ref<boolean>(true);
     const errorMessage = ref<string | null>(null);
 
-    // コンポーネントがマウントされたらAPIを実行
+    // ✅ コンポーネントがマウントされたらAPIを実行
     onMounted(async () => {
       try {
         users.value = await fetchUsers();
