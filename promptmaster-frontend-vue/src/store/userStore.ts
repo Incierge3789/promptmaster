@@ -1,23 +1,25 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { fetchUsers } from '../services/api';
-import type { User } from '../services/api'; // 型のみのインポート
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { fetchUsers } from "../services/api";
 
-export const useUserStore = defineStore('userStore', () => {
-  const users = ref<User[]>([]);
-  const isLoading = ref<boolean>(false);
-  const errorMessage = ref<string | null>(null);
-
-  const loadUsers = async () => {
-    isLoading.value = true;
-    try {
-      users.value = await fetchUsers();
-    } catch (error) {
-      errorMessage.value = "Failed to fetch users.";
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  return { users, isLoading, errorMessage, loadUsers };
+export const useUserStore = defineStore("userStore", {
+  state: () => ({
+    users: [] as { id: number; name: string; email: string }[],
+    isLoading: false,
+    errorMessage: null as string | null,
+  }),
+  actions: {
+    async fetchUserData() {
+      try {
+        this.isLoading = true;
+        this.errorMessage = null;
+        this.users = await fetchUsers();
+      } catch (error) {
+        this.errorMessage = "Failed to fetch users. Please try again later.";
+        console.error("API Error:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+  },
 });

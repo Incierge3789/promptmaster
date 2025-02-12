@@ -1,137 +1,117 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
+  <div class="container">
+    <!-- ローディング -->
+    <div v-if="isLoading" class="loading">Loading users...</div>
 
-    <h3>Users List</h3>
-    <p v-if="isLoading">Loading users...</p>
-    <p v-if="errorMessage" class="error">
+    <!-- エラー表示 -->
+    <div v-if="errorMessage" class="error">
       {{ errorMessage }}
-      <button @click="retryFetchUsers">Retry</button>
-    </p>
-    <ul v-if="!isLoading && !errorMessage">
-      <li v-for="user in users" :key="user.id">
-        {{ user.name }} ({{ user.email }})
-      </li>
-    </ul>
+      <button @click="userStore.fetchUserData()" class="retry">Retry</button>
+    </div>
 
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li>
-        <a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank"
-          rel="noopener">typescript</a>
-      </li>
-    </ul>
-
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a>
-      </li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <!-- ユーザーカード一覧 -->
+    <div v-if="!isLoading && !errorMessage" class="user-list">
+      <div v-for="user in users" :key="user.id" class="user-card">
+        <div class="avatar">{{ user.name.charAt(0) }}</div>
+        <h3>{{ user.name }}</h3>
+        <p>{{ user.email }}</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, PropType } from "vue";
-import { fetchUsers } from "../services/api";
-
-// ✅ ユーザーの型を定義
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+import { defineComponent, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "../store/userStore";
 
 export default defineComponent({
-  props: {
-    msg: {
-      type: String as PropType<string>,
-      required: true,
-    },
-  },
   setup() {
-    // ✅ 型安全な `ref` を定義
-    const users = ref<User[]>([]);
-    const isLoading = ref<boolean>(true);
-    const errorMessage = ref<string | null>(null);
+    const userStore = useUserStore();
+    const { users, isLoading, errorMessage } = storeToRefs(userStore);
 
-    // ✅ ユーザーデータを取得する関数
-    const loadUsers = async () => {
-      try {
-        isLoading.value = true;
-        errorMessage.value = null;
-        users.value = await fetchUsers();
-      } catch (error) {
-        errorMessage.value = "Failed to fetch users. Please try again later.";
-        console.error("API Error:", error);
-      } finally {
-        isLoading.value = false;
-      }
-    };
-
-    // ✅ 再試行ボタン用の関数
-    const retryFetchUsers = () => {
-      loadUsers();
-    };
-
-    // ✅ コンポーネントがマウントされたらAPIを実行
-    onMounted(loadUsers);
+    onMounted(() => {
+      userStore.fetchUserData();
+    });
 
     return {
       users,
       isLoading,
       errorMessage,
-      retryFetchUsers,
+      userStore,
     };
   },
 });
 </script>
 
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+/* 背景のグラデーション */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+  color: #333;
+  font-family: "Inter", sans-serif;
+  padding: 20px;
 }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
-
-.error {
-  color: red;
+h1 {
+  font-size: 32px;
   font-weight: bold;
+  margin-bottom: 20px;
 }
 
-button {
-  margin-left: 10px;
-  padding: 5px 10px;
-  font-size: 14px;
-  cursor: pointer;
+/* ユーザーリストのレイアウト */
+.user-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 40px;
+  max-width: 80vw;
+}
+
+/* ユーザーカードのデザイン（ネオモーフィズム） */
+.user-card {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(15px);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.4s ease-in-out, box-shadow 0.3s ease-in-out;
+  width: 250px;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.5);
+}
+
+.user-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2), -5px -5px 15px rgba(255, 255, 255, 0.6);
+}
+
+/* ユーザーアバター */
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto 10px;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .user-list {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 </style>
+
+
