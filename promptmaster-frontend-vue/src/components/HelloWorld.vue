@@ -6,10 +6,27 @@
       check out the
       <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
     </p>
+
+    <h3>Users List</h3>
+    <ul v-if="users.length">
+      <li v-for="user in users" :key="user.id">
+        {{ user.name }} ({{ user.email }})
+      </li>
+    </ul>
+    <p v-else>Loading users...</p>
+
     <h3>Installed CLI Plugins</h3>
     <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
+      <li>
+        <a
+          href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript"
+          target="_blank"
+          rel="noopener"
+          >typescript</a
+        >
+      </li>
     </ul>
+
     <h3>Essential Links</h3>
     <ul>
       <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
@@ -18,6 +35,7 @@
       <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
       <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
     </ul>
+
     <h3>Ecosystem</h3>
     <ul>
       <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
@@ -30,7 +48,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, ref, onMounted } from "vue";
+import { fetchUsers } from "../services/api";
 
 export default defineComponent({
   props: {
@@ -38,6 +57,22 @@ export default defineComponent({
       type: String,
       required: true,
     },
+  },
+  setup() {
+    const users = ref<{ id: number; name: string; email: string }[]>([]);
+
+    // コンポーネントがマウントされたらAPIを実行
+    onMounted(async () => {
+      try {
+        users.value = await fetchUsers();
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    });
+
+    return {
+      users,
+    };
   },
 });
 </script>
