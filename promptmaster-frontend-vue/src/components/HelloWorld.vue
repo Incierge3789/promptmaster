@@ -1,5 +1,10 @@
 <template>
   <div class="container">
+    <!-- ダークモード切り替えボタン -->
+    <button class="toggle-theme" @click="toggleDarkMode">
+      {{ isDark ? "🌙 Dark Mode" : "☀️ Light Mode" }}
+    </button>
+
     <!-- ローディング -->
     <div v-if="isLoading" class="loading">Loading users...</div>
 
@@ -9,14 +14,8 @@
       <button @click="userStore.fetchUserData()" class="retry">Retry</button>
     </div>
 
-    <!-- ユーザーカード一覧 -->
-    <div v-if="!isLoading && !errorMessage" class="user-list">
-      <div v-for="user in users" :key="user.id" class="user-card">
-        <div class="avatar">{{ user.name.charAt(0) }}</div>
-        <h3>{{ user.name }}</h3>
-        <p>{{ user.email }}</p>
-      </div>
-    </div>
+    <!-- ユーザーリストを表示 -->
+    <UserList v-if="!isLoading && !errorMessage" :users="users" />
   </div>
 </template>
 
@@ -24,11 +23,15 @@
 import { defineComponent, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "../store/userStore";
+import { useDarkMode } from "../composables/useDarkMode";
+import UserList from "./UserList.vue";
 
 export default defineComponent({
+  components: { UserList },
   setup() {
     const userStore = useUserStore();
     const { users, isLoading, errorMessage } = storeToRefs(userStore);
+    const { isDark, toggleDarkMode } = useDarkMode();
 
     onMounted(() => {
       userStore.fetchUserData();
@@ -39,6 +42,8 @@ export default defineComponent({
       isLoading,
       errorMessage,
       userStore,
+      isDark,
+      toggleDarkMode,
     };
   },
 });
@@ -56,62 +61,39 @@ export default defineComponent({
   color: #333;
   font-family: "Inter", sans-serif;
   padding: 20px;
+  transition: background 0.3s, color 0.3s;
 }
 
-h1 {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 20px;
+/* ダークモード用 */
+.dark-mode .container {
+  background: linear-gradient(to bottom, #121212, #1e1e1e);
+  color: #f0f0f0;
 }
 
-/* ユーザーリストのレイアウト */
-.user-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  padding: 40px;
-  max-width: 80vw;
+/* ダークモード切り替えボタン */
+.toggle-theme {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: 2px solid #333;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* ユーザーカードのデザイン（ネオモーフィズム） */
-.user-card {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(15px);
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  transition: transform 0.4s ease-in-out, box-shadow 0.3s ease-in-out;
-  width: 250px;
-  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.5);
+.dark-mode .toggle-theme {
+  border: 2px solid #f0f0f0;
+  color: #f0f0f0;
 }
 
-.user-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2), -5px -5px 15px rgba(255, 255, 255, 0.6);
+.toggle-theme:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
-/* ユーザーアバター */
-.avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-  margin: 0 auto 10px;
-}
-
-/* レスポンシブデザイン */
-@media (max-width: 768px) {
-  .user-list {
-    flex-direction: column;
-    align-items: center;
-  }
+.dark-mode .toggle-theme:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>
-
-

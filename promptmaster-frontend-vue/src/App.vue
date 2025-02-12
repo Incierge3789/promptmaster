@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :class="{ 'dark-mode': isDark }">
     <img alt="Vue logo" src="./assets/logo.png">
     <h1>{{ title }}</h1>
     <HelloWorld :msg="title" />
@@ -8,25 +8,24 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import HelloWorld from "./components/HelloWorld.vue"; // ✅ インポート
+import HelloWorld from "./components/HelloWorld.vue";
+import { useDarkMode } from "./composables/useDarkMode";
 
 export default defineComponent({
-  name: "App",
   components: { HelloWorld },
   setup() {
     const title = ref<string>("Welcome to Your Vue.js + TypeScript App");
-    return { title };
+    const { isDark } = useDarkMode();
+
+    return { title, isDark };
   },
 });
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+/* ダークモード適用 */
+.dark-mode {
+  background-color: #121212;
+  color: #f0f0f0;
 }
 </style>
